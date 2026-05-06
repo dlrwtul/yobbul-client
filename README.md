@@ -46,11 +46,17 @@ npx expo start
 
 | Variable | Description | Exemple | Requis |
 |---|---|---|---|
-| `EXPO_PUBLIC_API_URL` | URL base du service orders/drivers | `http://192.168.1.x:3000` | Oui |
-| `EXPO_PUBLIC_AUTH_URL` | URL base du service auth | `http://192.168.1.x:3001` | Oui |
-| `EXPO_PUBLIC_TRACKING_WS_URL` | URL WebSocket tracking | `ws://192.168.1.x:3003/tracking` | Oui |
+| `EXPO_PUBLIC_API_URL` | Gateway REST (point d'entrée unique) | `http://192.168.1.x:3000` | Oui |
+| `EXPO_PUBLIC_TRACKING_WS_URL` | WebSocket tracking (connexion directe) | `ws://192.168.1.x:3003/tracking` | Oui |
+| `EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS` | Clé Google Maps iOS | `AIza...` | Oui |
+| `EXPO_PUBLIC_GOOGLE_MAPS_KEY_ANDROID` | Clé Google Maps Android | `AIza...` | Oui |
+| `EXPO_PUBLIC_GOOGLE_PLACES_KEY` | Clé Google Places (autocomplete adresse) | `AIza...` | Oui |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Projet Firebase (push notifications) | `yobbul-prod` | Oui |
+| `EXPO_PUBLIC_ENV` | Environnement | `development` | Non |
 
-> En l'absence de ces variables, les valeurs de `app.json > extra` sont utilisées comme fallback. Ne jamais pointer vers `localhost` depuis un appareil physique — utiliser l'IP LAN de la machine de développement.
+> Ne jamais pointer vers `localhost` depuis un appareil physique — utiliser l'IP LAN de la machine de développement (ex. `http://192.168.1.25:3000`).
+>
+> `EXPO_PUBLIC_AUTH_URL` et `EXPO_PUBLIC_ORDERS_URL` ont été supprimés — tous les appels REST passent désormais par le gateway `:3000`.
 
 ---
 
@@ -60,7 +66,7 @@ npx expo start
 yobbul-client/
 ├── src/
 │   ├── api/
-│   │   ├── client.ts          # Deux instances Axios (authClient / apiClient)
+│   │   ├── client.ts          # Instance Axios unique → gateway :3000
 │   │   │                      #   intercepteur JWT auto-refresh (single-flight)
 │   │   ├── auth.api.ts        # requestOtp, verifyOtp, me, logout
 │   │   ├── orders.api.ts      # list, findOne, estimate, create
@@ -76,18 +82,20 @@ yobbul-client/
 │   ├── screens/
 │   │   ├── auth/
 │   │   │   ├── SplashScreen.tsx      # Logo animé + check SecureStore
-│   │   │   ├── PhoneInputScreen.tsx  # Sélecteur pays + numéro formaté
+│   │   │   ├── PhoneInputScreen.tsx  # Sélecteur pays CEDEAO + numéro formaté
 │   │   │   └── OTPVerifyScreen.tsx   # 6 inputs + countdown 5 min + haptic
 │   │   ├── home/
-│   │   │   └── HomeScreen.tsx        # Carte + bouton Commander
+│   │   │   └── HomeScreen.tsx        # Carte + catégories + commandes récentes
 │   │   ├── order/
-│   │   │   ├── PickupScreen.tsx      # Saisie adresse de collecte
+│   │   │   ├── PickupScreen.tsx      # Places autocomplete (dropdown modal)
 │   │   │   ├── DropoffScreen.tsx     # Saisie adresse de livraison
 │   │   │   ├── PackageScreen.tsx     # Type colis + type véhicule
 │   │   │   ├── ConfirmScreen.tsx     # Récap tarif + méthode paiement
 │   │   │   └── TrackingScreen.tsx    # Carte + position livreur + ETA + statut
+│   │   ├── historique/
+│   │   │   └── HistoriqueScreen.tsx  # Liste commandes + statuts colorés
 │   │   └── profile/
-│   │       └── (ProfileScreen, HistoryScreen, OrderDetailScreen)
+│   │       └── ProfilScreen.tsx      # Avatar + crédits + settings + logout
 │   │
 │   ├── store/
 │   │   └── auth.store.ts      # Zustand : tokens SecureStore + profil user

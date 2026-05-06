@@ -12,12 +12,10 @@ import {
   useAuthStore,
 } from '../store/auth.store';
 
-type AppConfig = { apiUrl?: string; authUrl?: string; ordersUrl?: string; driversUrl?: string };
+type AppConfig = { apiUrl?: string };
 const extra = (Constants.expoConfig?.extra ?? {}) as AppConfig;
 
-const AUTH_BASE    = process.env.EXPO_PUBLIC_AUTH_URL     ?? extra.authUrl    ?? 'http://localhost:3001';
-const ORDERS_BASE  = process.env.EXPO_PUBLIC_ORDERS_URL   ?? extra.ordersUrl  ?? 'http://localhost:3002';
-const DRIVERS_BASE = process.env.EXPO_PUBLIC_DRIVERS_URL  ?? extra.driversUrl ?? 'http://localhost:3006';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? extra.apiUrl ?? 'http://localhost:3000';
 
 function create(baseURL: string): AxiosInstance {
   const instance = axios.create({
@@ -26,7 +24,6 @@ function create(baseURL: string): AxiosInstance {
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
   });
 
-  // ── Request interceptor: inject JWT ────────────────────────────────────────
   instance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
     const token = await readAccessToken();
     if (token && config.headers) {
@@ -35,7 +32,6 @@ function create(baseURL: string): AxiosInstance {
     return config;
   });
 
-  // ── Response interceptor: auto-refresh on 401 ──────────────────────────────
   let refreshPromise: Promise<string | null> | null = null;
 
   instance.interceptors.response.use(
@@ -49,7 +45,6 @@ function create(baseURL: string): AxiosInstance {
 
       original._retry = true;
 
-      // Single-flight refresh: share the same promise across concurrent 401s
       if (!refreshPromise) {
         refreshPromise = refreshAccessToken().finally(() => {
           refreshPromise = null;
@@ -63,7 +58,6 @@ function create(baseURL: string): AxiosInstance {
         return Promise.reject(error);
       }
 
-      // Retry with new token
       original.headers = { ...(original.headers ?? {}), Authorization: `Bearer ${newToken}` };
       return instance(original);
     },
@@ -78,12 +72,11 @@ async function refreshAccessToken(): Promise<string | null> {
 
   try {
     const res = await axios.post<{ access_token: string; refresh_token: string }>(
-      `${AUTH_BASE}/api/v1/auth/refresh`,
+      `${API_BASE}/api/v1/auth/refresh`,
       { refresh_token: refreshToken },
       { timeout: 10_000 },
     );
     await writeAccessToken(res.data.access_token);
-    // The refresh response rotates the refresh_token too — update it
     await useAuthStore.getState().updateAccessToken(res.data.access_token);
     return res.data.access_token;
   } catch {
@@ -91,7 +84,6 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
-// One client per microservice — each carries the JWT interceptors
-export const authClient    = create(AUTH_BASE);
-export const ordersClient  = create(ORDERS_BASE);
-export const driversClient = create(DRIVERS_BASE);
+export const apiClient = create(API_BASE);
+// Alias — toutes les routes auth passent par le gateway (/api/v1/auth/*)
+export const authClient = apiClient;

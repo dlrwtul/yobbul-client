@@ -1,4 +1,4 @@
-import { ordersClient } from './client';
+import { apiClient } from './client';
 import type { Order, PackageType, PriceEstimate, VehicleType } from '../types/order.types';
 
 export interface PaginatedOrders {
@@ -37,22 +37,22 @@ export interface CreateOrderDto extends EstimateOrderDto {
 
 export const OrdersApi = {
   async list(query: ListOrdersQuery = {}): Promise<PaginatedOrders> {
-    const res = await ordersClient.get<PaginatedOrders>('/api/v1/orders', { params: query });
+    const res = await apiClient.get<PaginatedOrders>('/api/v1/orders', { params: query });
     return res.data;
   },
 
   async findOne(id: string): Promise<Order> {
-    const res = await ordersClient.get<Order>(`/api/v1/orders/${id}`);
+    const res = await apiClient.get<Order>(`/api/v1/orders/${id}`);
     return res.data;
   },
 
   async estimate(dto: EstimateOrderDto): Promise<PriceEstimate> {
-    const res = await ordersClient.post<PriceEstimate>('/api/v1/orders/estimate', dto);
+    const res = await apiClient.post<PriceEstimate>('/api/v1/orders/estimate', dto);
     return res.data;
   },
 
   async create(dto: CreateOrderDto): Promise<Order> {
-    const res = await ordersClient.post<Order>('/api/v1/orders', dto);
+    const res = await apiClient.post<Order>('/api/v1/orders', dto);
     return res.data;
   },
 };

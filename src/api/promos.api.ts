@@ -1,4 +1,4 @@
-import { ordersClient } from './client';
+import { apiClient } from './client';
 
 export interface Promo {
   id: string;
@@ -13,7 +13,7 @@ export interface Promo {
 
 export const PromosApi = {
   async active(): Promise<Promo[]> {
-    const res = await ordersClient.get<Promo[]>('/api/v1/promos/active');
+    const res = await apiClient.get<Promo[]>('/api/v1/promos/active');
     return res.data;
   },
 };
