@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  ci:
+    name: Type-check · Lint
+    runs-on: ubuntu-latest
+
+    env:
+      EXPO_PUBLIC_API_URL: http://localhost:3000
+      EXPO_PUBLIC_AUTH_URL: http://localhost:3001
+      EXPO_PUBLIC_TRACKING_WS_URL: ws://localhost:3003/tracking
+      EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS: ci_stub
+      EXPO_PUBLIC_GOOGLE_MAPS_KEY_ANDROID: ci_stub
+      EXPO_PUBLIC_GOOGLE_PLACES_KEY: ci_stub
+      EXPO_PUBLIC_FIREBASE_PROJECT_ID: yobbul-ci
+      EXPO_PUBLIC_ENV: ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint src/ --ext .ts,.tsx --max-warnings 0
+        continue-on-error: true

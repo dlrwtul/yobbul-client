@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Yobbul",
+    "slug": "yobbul",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "yobbul",
+    "primaryColor": "#FF6B2B",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF6B2B"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "sn.yobbul.client",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Yobbul a besoin de votre position pour trouver votre adresse de livraison.",
+        "NSCameraUsageDescription": "Yobbul a besoin de la caméra pour prendre des photos de vos colis."
+      }
+    },
+    "android": {
+      "package": "sn.yobbul.client",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF6B2B"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-barcode-scanner",
+      "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Yobbul utilise votre position pour vos livraisons."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3000",
+      "authUrl": "http://localhost:3001",
+      "trackingWsUrl": "ws://localhost:3003/tracking"
+    }
+  }
+}
